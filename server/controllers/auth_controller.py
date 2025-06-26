@@ -1,29 +1,20 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
-from server.models import Appearance, db
+from werkzeug.security import check_password_hash
+from server.models import User
+from flask_jwt_extended import create_access_token
 
-appearance_bp = Blueprint('appearances', __name__)
+auth_bp = Blueprint('auth', __name__)
 
-@appearance_bp.route('/appearances', methods=['POST'])
-@jwt_required()
-def create_appearance():
+@auth_bp.route('/api/login', methods=['POST'])
+def login():
     data = request.get_json()
-    
-    try:
-        appearance = Appearance(
-            rating=data['rating'],
-            guest_id=data['guest_id'],
-            episode_id=data['episode_id']
-        )
-        db.session.add(appearance)
-        db.session.commit()
-        return jsonify({
-            'id': appearance.id,
-            'rating': appearance.rating,
-            'guest_id': appearance.guest_id,
-            'episode_id': appearance.episode_id
-        }), 201
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
-    except KeyError:
-        return jsonify({'error': 'Missing required fields'}), 400
+    username = data.get("username")
+    password = data.get("password")
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or not check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Invalid username or password"}), 401
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify(access_token=access_token), 200
