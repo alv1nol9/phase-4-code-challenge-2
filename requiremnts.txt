@@ -1,0 +1,9 @@
+# Database
+DATABASE_URL=postgresql://benson:benson1234@localhost:5555/late_show_db
+
+# Authentication
+JWT_SECRET_KEY=your-very-secure-random-key-here
+SECRET_KEY=your-flask-secret-key-here
+
+# Environment
+FLASK_DEBUG=True
