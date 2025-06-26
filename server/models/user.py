@@ -1,13 +1,16 @@
-from server.extensions import db
-from server.models.guest import Guest
+from server.models import db
 
-
-class Guest(db.Model):
-    __tablename__ = 'guests'
+class User(db.Model):
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    occupation = db.Column(db.String, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
 
-    appearances = db.relationship('Appearance', backref='guest', cascade='all, delete-orphan')
+    def set_password(self, password):
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
 
+    def check_password(self, password):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
